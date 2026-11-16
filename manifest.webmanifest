@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Příklady za čas",
+  "short_name": "Příklady",
+  "description": "Vypočítej příklady a rodič dostane zprávu, že může přidat čas navíc.",
+  "lang": "cs",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff8f1",
+  "theme_color": "#ff8a3d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

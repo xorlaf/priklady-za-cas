@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Příklady za čas</title>
+  <meta name="description" content="Vypočítej příklady a rodič dostane zprávu, že může přidat čas navíc.">
+  <meta name="theme-color" content="#ff8a3d">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <main id="app">
+
+    <!-- První spuštění: rodič nastaví PIN -->
+    <section id="screen-setup" class="screen" hidden>
+      <div class="card narrow">
+        <h1>Vítejte 👋</h1>
+        <p class="lead">Tuhle aplikaci nastavuje rodič. Nejdřív si zvolte PIN, kterým se chrání nastavení.</p>
+        <p id="setup-prompt" class="prompt">Zvolte PIN (4 číslice)</p>
+        <div id="setup-dots" class="pin-dots" aria-live="polite"></div>
+        <p id="setup-error" class="error" role="alert"></p>
+        <div id="setup-keypad" class="keypad keypad-pin"></div>
+        <button id="setup-cancel" class="link-btn" type="button" hidden>Zrušit</button>
+      </div>
+    </section>
+
+    <!-- Úvod pro dítě -->
+    <section id="screen-home" class="screen" hidden>
+      <div class="home">
+        <h1 id="home-hello">Ahoj!</h1>
+        <p id="home-lead" class="lead">Chceš čas navíc? Vypočítej příklady.</p>
+        <button id="home-start" class="big-btn" type="button">Začít počítat</button>
+        <p id="home-limit" class="muted"></p>
+        <p id="home-outbox" class="notice" hidden></p>
+      </div>
+      <button id="home-settings" class="gear" type="button" aria-label="Nastavení pro rodiče">⚙</button>
+    </section>
+
+    <!-- Počítání -->
+    <section id="screen-play" class="screen" hidden>
+      <header class="play-bar">
+        <button id="play-quit" class="icon-btn" type="button" aria-label="Ukončit">✕</button>
+        <div class="progress" aria-hidden="true"><div id="play-progress-fill" class="progress-fill"></div></div>
+        <span id="play-progress-text" class="progress-text"></span>
+        <span id="play-hearts" class="hearts" aria-label="Zbývající chyby"></span>
+      </header>
+      <div class="play-body">
+        <div class="problem-area">
+          <div id="play-problem" class="problem" aria-live="polite"></div>
+          <p id="play-feedback" class="feedback" aria-live="assertive"></p>
+        </div>
+        <div id="play-keypad" class="keypad keypad-answer"></div>
+      </div>
+    </section>
+
+    <!-- Výsledek -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card narrow center">
+        <div id="result-emoji" class="result-emoji"></div>
+        <h1 id="result-title"></h1>
+        <p id="result-text" class="lead"></p>
+        <p id="result-notify" class="notice" hidden></p>
+        <div class="row">
+          <button id="result-retry" class="big-btn" type="button" hidden>Zkusit znovu</button>
+          <button id="result-home" class="btn" type="button">Domů</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIN před nastavením -->
+    <section id="screen-pin" class="screen" hidden>
+      <div class="card narrow">
+        <h1>Nastavení pro rodiče</h1>
+        <p class="prompt">Zadejte PIN</p>
+        <div id="pin-dots" class="pin-dots"></div>
+        <p id="pin-error" class="error" role="alert"></p>
+        <div id="pin-keypad" class="keypad keypad-pin"></div>
+        <button id="pin-back" class="link-btn" type="button">Zpět</button>
+      </div>
+    </section>
+
+    <!-- Nastavení -->
+    <section id="screen-settings" class="screen screen-scroll" hidden>
+      <div class="settings">
+        <header class="settings-head">
+          <h1>Nastavení</h1>
+          <button id="settings-close" class="btn btn-primary" type="button">Hotovo</button>
+        </header>
+        <p id="settings-error" class="error" role="alert"></p>
+
+        <fieldset>
+          <legend>Dítě</legend>
+          <label class="field">Jméno (zobrazí se v aplikaci a ve zprávě)
+            <input id="s-name" type="text" maxlength="30" autocomplete="off">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Příklady</legend>
+          <div class="checks">
+            <label><input id="s-add" type="checkbox"> Sčítání</label>
+            <label><input id="s-sub" type="checkbox"> Odčítání</label>
+          </div>
+          <label class="field">Rozsah sčítání a odčítání
+            <select id="s-max">
+              <option value="10">do 10</option>
+              <option value="20">do 20</option>
+              <option value="100">do 100</option>
+              <option value="1000">do 1000</option>
+            </select>
+          </label>
+          <div class="checks">
+            <label><input id="s-cross" type="checkbox"> S přechodem přes desítku (8 + 5)</label>
+          </div>
+          <div class="checks">
+            <label><input id="s-mul" type="checkbox"> Násobení</label>
+            <label><input id="s-div" type="checkbox"> Dělení</label>
+          </div>
+          <div class="field-row">
+            <label class="field">Násobilka od řady
+              <select id="s-rows-from"></select>
+            </label>
+            <label class="field">do řady
+              <select id="s-rows-to"></select>
+            </label>
+          </div>
+          <div class="checks">
+            <label><input id="s-missing" type="checkbox"> Doplňování (7 + ? = 15)</label>
+            <label><input id="s-three" type="checkbox"> Tři čísla a závorky (12 − (4 + 3))</label>
+          </div>
+          <div class="sample">
+            <span class="muted">Ukázka:</span> <span id="s-sample"></span>
+            <button id="s-sample-new" class="link-btn" type="button">jiná</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pravidla</legend>
+          <div class="field-row">
+            <label class="field">Příkladů v sadě
+              <input id="s-count" type="number" min="3" max="30" inputmode="numeric">
+            </label>
+            <label class="field">Min. úspěšnost (%)
+              <input id="s-accuracy" type="number" min="50" max="100" step="5" inputmode="numeric">
+            </label>
+          </div>
+          <div class="field-row">
+            <label class="field">Min. čas na příklad (s)
+              <input id="s-minsec" type="number" min="0" max="10" inputmode="numeric">
+            </label>
+            <label class="field">Sad za den (0 = bez omezení)
+              <input id="s-daily" type="number" min="0" max="10" inputmode="numeric">
+            </label>
+          </div>
+          <p id="s-rules-hint" class="muted small"></p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Zprávy do telefonu rodiče</legend>
+          <ol class="steps">
+            <li>Do telefonu si nainstalujte aplikaci <strong>ntfy</strong> (Google Play / App Store).</li>
+            <li>V ntfy klepněte na <strong>+</strong> a zadejte téma níže (nebo naskenujte QR kód fotoaparátem telefonu).</li>
+            <li>Tady klepněte na <strong>Poslat zkušební zprávu</strong> a zkontrolujte, že dorazila.</li>
+          </ol>
+          <div class="ntfy-box">
+            <div id="s-qr" class="qr"></div>
+            <div class="ntfy-info">
+              <label class="field">Téma
+                <input id="s-topic" type="text" readonly>
+              </label>
+              <label class="field">Server
+                <input id="s-server" type="url" inputmode="url">
+              </label>
+              <div class="row">
+                <button id="s-test" class="btn btn-primary" type="button">Poslat zkušební zprávu</button>
+                <button id="s-new-topic" class="btn" type="button">Nové téma</button>
+              </div>
+              <p id="s-test-status" class="muted small" aria-live="polite"></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Historie</legend>
+          <ul id="s-history" class="history"></ul>
+        </fieldset>
+
+        <fieldset>
+          <legend>PIN</legend>
+          <button id="s-change-pin" class="btn" type="button">Změnit PIN</button>
+          <p class="muted small">Zapomenutý PIN: v Chromu na tabletu Nastavení → Nastavení webů → Všechny weby → adresa aplikace → Vymazat a resetovat. Smaže se i nastavení, historie a téma pro zprávy.</p>
+        </fieldset>
+
+        <p class="muted small center">Příklady za čas · verze <span id="s-version"></span></p>
+      </div>
+    </section>
+
+  </main>
+  <noscript>Aplikace potřebuje zapnutý JavaScript.</noscript>
+</body>
+</html>
